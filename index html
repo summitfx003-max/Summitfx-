@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SummitFX Trading Corporation</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">SummitFX</div>
+  <nav>
+    <a href="#">Markets</a>
+    <a href="#">Trade</a>
+    <a href="#">Earn</a>
+    <a href="#">About</a>
+    <a href="login.html" class="login">Login</a>
+    <a href="register.html" class="register">Register</a>
+  </nav>
+</header>
+
+<!-- HERO SECTION -->
+<section class="hero">
+  <div class="hero-text">
+    <h1>Trade Crypto & Forex Like a Pro</h1>
+    <p>Secure. Fast. Powerful trading tools to help you grow your portfolio.</p>
+    <div class="hero-buttons">
+      <a href="register.html" class="btn-primary">Start Trading</a>
+      <a href="#" class="btn-secondary">View Markets</a>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stats">
+  <div>
+    <h2>$1.2B+</h2>
+    <p>24h Trading Volume</p>
+  </div>
+  <div>
+    <h2>500K+</h2>
+    <p>Active Users</p>
+  </div>
+  <div>
+    <h2>120+</h2>
+    <p>Trading Pairs</p>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+  <h2>Why Choose SummitFX?</h2>
+
+  <div class="feature-grid">
+    <div class="card">
+      <h3>Advanced Trading</h3>
+      <p>Real-time charts, indicators, and tools for pro traders.</p>
+    </div>
+
+    <div class="card">
+      <h3>Secure Platform</h3>
+      <p>Industry-grade security to protect your funds and data.</p>
+    </div>
+
+    <div class="card">
+      <h3>Fast Transactions</h3>
+      <p>Execute trades instantly with high liquidity.</p>
+    </div>
+
+    <div class="card">
+      <h3>24/7 Support</h3>
+      <p>Our team is always here to help you.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CALL TO ACTION -->
+<section class="cta">
+  <h2>Ready to Start Trading?</h2>
+  <a href="register.html" class="btn-primary">Create Account</a>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>&copy; 2026 SummitFX Trading Corporation. All rights reserved.</p>
+</footer>
+
+</body>
+</html>
