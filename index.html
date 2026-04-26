@@ -127,7 +127,6 @@ button {
             AI-powered trading system with real-time market execution and analysis.
         </div>
 
-        <!-- FIXED BUTTONS -->
         <button class="login" onclick="goLogin()">Sign In</button>
         <button class="register" onclick="goRegister()">Sign Up</button>
     </div>
@@ -189,10 +188,11 @@ setInterval(() => {
 }, 3000);
 </script>
 
-<!-- FIREBASE -->
+<!-- FIREBASE (FIXED PROPERLY FOR STABILITY) -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+import { getAuth, setPersistence, browserLocalPersistence } 
+from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBXpqaWs6HgOsRRa7nAEsHJ74XWWXuvMQk",
@@ -203,10 +203,19 @@ const firebaseConfig = {
     appId: "1:941382391446:web:d9198bc79cf26bf82154b7"
 };
 
-initializeApp(firebaseConfig);
-getAuth();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-// NAVIGATION FUNCTIONS
+/* 🔥 FIX: KEEP USER LOGGED IN PROPERLY */
+setPersistence(auth, browserLocalPersistence)
+.then(() => {
+    console.log("🔥 Firebase persistence enabled");
+})
+.catch((error) => {
+    console.log("Persistence error:", error);
+});
+
+/* NAVIGATION */
 window.goLogin = function () {
     window.location.href = "login.html";
 }
@@ -215,7 +224,7 @@ window.goRegister = function () {
     window.location.href = "register.html";
 }
 
-console.log("🔥 SummitFX Firebase Connected");
+console.log("🔥 SummitFX Firebase Connected Safely");
 </script>
 
 </body>
