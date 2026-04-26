@@ -1,59 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Register - SummitFX</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register - SummitFX</title>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial;
-      background: #0b0f19;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #0b0f19;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
 
-    .container {
-      background: #111827;
-      padding: 30px;
-      border-radius: 10px;
-      width: 300px;
-      text-align: center;
-    }
+.container {
+  background: #111827;
+  padding: 30px;
+  border-radius: 10px;
+  width: 300px;
+  text-align: center;
+}
 
-    h2 {
-      margin-bottom: 20px;
-    }
+h2 {
+  margin-bottom: 20px;
+}
 
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 5px;
-    }
+input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 5px;
+}
 
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #f0b90b;
-      border: none;
-      border-radius: 5px;
-      font-weight: bold;
-      cursor: pointer;
-    }
+button {
+  width: 100%;
+  padding: 10px;
+  background: #f0b90b;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+}
 
-    a {
-      color: #f0b90b;
-      text-decoration: none;
-      display: block;
-      margin-top: 15px;
-    }
-  </style>
+a {
+  color: #f0b90b;
+  text-decoration: none;
+  display: block;
+  margin-top: 15px;
+}
+</style>
+
 </head>
 
 <body>
@@ -69,43 +70,63 @@
   <a href="login.html">Already have an account? Login</a>
 </div>
 
-<!-- 🔥 FIREBASE + REGISTER LOGIC -->
 <script type="module">
 
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { 
+  getAuth, 
+  createUserWithEmailAndPassword,
+  setPersistence,
+  browserLocalPersistence
+} from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBXpqaWs6HgOsRRa7nAEsHJ74XWWXuvMQk",
-    authDomain: "summitfx-4cb86.firebaseapp.com",
-    projectId: "summitfx-4cb86",
-    storageBucket: "summitfx-4cb86.firebasestorage.app",
-    messagingSenderId: "941382391446",
-    appId: "1:941382391446:web:d9198bc79cf26bf82154b7"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyBXpqaWs6HgOsRRa7nAEsHJ74XWWXuvMQk",
+  authDomain: "summitfx-4cb86.firebaseapp.com",
+  projectId: "summitfx-4cb86",
+  storageBucket: "summitfx-4cb86.firebasestorage.app",
+  messagingSenderId: "941382391446",
+  appId: "1:941382391446:web:d9198bc79cf26bf82154b7"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-  // REGISTER FUNCTION
-  window.registerUser = function () {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+/* 🔥 FIX: KEEP AUTH CONSISTENT ACROSS PAGES */
+setPersistence(auth, browserLocalPersistence)
+.then(() => {
+  console.log("Auth persistence enabled");
+})
+.catch((error) => {
+  console.log("Persistence error:", error);
+});
 
-    if (email === "" || password === "") {
-      alert("Please fill all fields");
-      return;
-    }
+/* REGISTER FUNCTION */
+window.registerUser = function () {
 
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        alert("✅ Account created successfully!");
-        window.location.href = "login.html"; // redirect after register
-      })
-      .catch((error) => {
-        alert("❌ " + error.message);
-      });
-  };
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  if (!email || !password) {
+    alert("Please fill all fields");
+    return;
+  }
+
+  createUserWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+
+      alert("✅ Account created successfully!");
+
+      /* small delay for stability */
+      setTimeout(() => {
+        window.location.href = "login.html";
+      }, 500);
+
+    })
+    .catch((error) => {
+      alert("❌ " + error.message);
+    });
+};
 
 </script>
 
