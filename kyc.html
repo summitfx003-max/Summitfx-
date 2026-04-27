@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KYC Admin Panel - SummitFX</title>
+<title>KYC Verification - SummitFX</title>
 
 <style>
 body{
     margin:0;
     font-family:Arial;
-    background:#0b1220;
+    background:linear-gradient(180deg,#0b1220,#05080f);
     color:white;
 }
 
@@ -23,66 +23,134 @@ body{
 }
 
 .container{
-    padding:15px;
+    padding:20px;
 }
 
 .card{
     background:#111827;
-    padding:15px;
+    padding:20px;
     border-radius:15px;
     margin-bottom:15px;
 }
 
-img{
+input, select{
     width:100%;
-    border-radius:10px;
+    padding:12px;
     margin-top:10px;
+    border:none;
+    border-radius:10px;
+    background:#0b1220;
+    color:white;
 }
 
 .btn{
-    width:48%;
-    padding:10px;
+    width:100%;
+    padding:12px;
+    margin-top:15px;
     border:none;
     border-radius:10px;
+    background:#00ffcc;
+    color:black;
     font-weight:bold;
     cursor:pointer;
 }
 
-.approve{
-    background:#00ffcc;
-    color:black;
-}
-
-.reject{
-    background:#ff4d4d;
-    color:white;
-}
-
-.row{
-    display:flex;
-    justify-content:space-between;
+.note{
+    font-size:12px;
+    color:#aaa;
     margin-top:10px;
 }
 
-.label{
-    color:#aaa;
-    font-size:12px;
+img{
+    width:100%;
+    margin-top:10px;
+    border-radius:10px;
+    display:none;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">KYC Admin Panel</div>
+<div class="header">KYC Verification</div>
 
-<div class="container" id="list">
-Loading KYC requests...
+<div class="container">
+
+<div class="card">
+
+    <label>Full Name</label>
+    <input id="name" placeholder="Enter full name">
+
+    <label>Country</label>
+    <select id="country">
+        <option value="">Select Country</option>
+        <option>Afghanistan</option>
+        <option>Albania</option>
+        <option>Algeria</option>
+        <option>Argentina</option>
+        <option>Australia</option>
+        <option>Austria</option>
+        <option>Bangladesh</option>
+        <option>Belgium</option>
+        <option>Brazil</option>
+        <option>Canada</option>
+        <option>China</option>
+        <option>Egypt</option>
+        <option>France</option>
+        <option>Germany</option>
+        <option>India</option>
+        <option>Indonesia</option>
+        <option>Italy</option>
+        <option>Japan</option>
+        <option>Kenya</option>
+        <option>Mexico</option>
+        <option>Nigeria</option>
+        <option>Pakistan</option>
+        <option>Philippines</option>
+        <option>Russia</option>
+        <option>South Africa</option>
+        <option>Spain</option>
+        <option>Turkey</option>
+        <option>United Kingdom</option>
+        <option>United States</option>
+        <option>Vietnam</option>
+        <option>Zambia</option>
+    </select>
+
+    <label>ID Type</label>
+    <select id="idType">
+        <option value="">Select ID Type</option>
+        <option>National ID</option>
+        <option>Passport</option>
+        <option>Driver's License</option>
+    </select>
+
+</div>
+
+<div class="card">
+
+    <label>Upload ID Photo</label>
+    <input type="file" id="idFile" accept="image/*">
+
+    <label>Upload Selfie (holding ID optional)</label>
+    <input type="file" id="selfieFile" accept="image/*">
+
+    <div class="note">
+        ⚠️ Ensure images are clear and readable. Blurry uploads may delay verification.
+    </div>
+
+</div>
+
+<button class="btn" onclick="submitKYC()">Submit KYC</button>
+
 </div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBXpqaWs6HgOsRRa7nAEsHJ74XWWXuvMQk",
@@ -94,69 +162,69 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
-const list = document.getElementById("list");
+let uid = null;
 
-/* LOAD KYC REQUESTS */
-async function loadKYC(){
+/* AUTH */
+onAuthStateChanged(auth,(user)=>{
+    if(user){
+        uid = user.uid;
+    } else {
+        window.location = "login.html";
+    }
+});
 
-    const snap = await getDocs(collection(db,"kyc"));
-
-    list.innerHTML = "";
-
-    snap.forEach(docSnap => {
-
-        const d = docSnap.data();
-        const id = docSnap.id;
-
-        list.innerHTML += `
-        <div class="card">
-
-            <div class="label">Name</div>
-            <div>${d.name}</div>
-
-            <div class="label">Country</div>
-            <div>${d.country}</div>
-
-            <div class="label">ID Type</div>
-            <div>${d.idType}</div>
-
-            <div class="label">Status</div>
-            <div>${d.status}</div>
-
-            <img src="${d.idUrl}">
-            ${d.selfieUrl ? `<img src="${d.selfieUrl}">` : ""}
-
-            <div class="row">
-                <button class="btn approve" onclick="approve('${id}')">Approve</button>
-                <button class="btn reject" onclick="reject('${id}')">Reject</button>
-            </div>
-
-        </div>
-        `;
-    });
+/* UPLOAD FUNCTION */
+async function upload(file,path){
+    const storageRef = ref(storage,path);
+    await uploadBytes(storageRef,file);
+    return await getDownloadURL(storageRef);
 }
 
-/* APPROVE */
-window.approve = async function(id){
-    await updateDoc(doc(db,"kyc",id),{
-        status:"approved"
-    });
-    alert("Approved");
-    loadKYC();
-}
+/* SUBMIT KYC */
+window.submitKYC = async function(){
 
-/* REJECT */
-window.reject = async function(id){
-    await updateDoc(doc(db,"kyc",id),{
-        status:"rejected"
-    });
-    alert("Rejected");
-    loadKYC();
-}
+    const name = document.getElementById("name").value;
+    const country = document.getElementById("country").value;
+    const idType = document.getElementById("idType").value;
 
-loadKYC();
+    const idFile = document.getElementById("idFile").files[0];
+    const selfieFile = document.getElementById("selfieFile").files[0];
+
+    if(!name || !country || !idType || !idFile){
+        alert("Fill all required fields");
+        return;
+    }
+
+    try{
+
+        const idUrl = await upload(idFile,`kyc/${uid}/id.jpg`);
+
+        let selfieUrl = "";
+        if(selfieFile){
+            selfieUrl = await upload(selfieFile,`kyc/${uid}/selfie.jpg`);
+        }
+
+        await setDoc(doc(db,"kyc",uid),{
+            name,
+            country,
+            idType,
+            idUrl,
+            selfieUrl,
+            status:"pending",
+            createdAt:new Date().toISOString()
+        });
+
+        alert("KYC submitted successfully (Pending Verification)");
+        window.location = "dashboard.html";
+
+    }catch(err){
+        alert(err.message);
+    }
+}
 
 </script>
 
