@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deposit - SummitFX</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:#0b1220;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.box{
+    text-align:center;
+}
+
+button{
+    padding:15px 30px;
+    border:none;
+    border-radius:10px;
+    background:#00ffcc;
+    color:black;
+    font-weight:bold;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+    <h2>Deposit Funds</h2>
+    <p>Proceed to deposit page</p>
+
+    <button onclick="goDeposit()">Continue</button>
+</div>
+
+<script>
+function goDeposit(){
+    window.location = "deposit-funds.html";
+}
+</script>
+
+</body>
+</html>
