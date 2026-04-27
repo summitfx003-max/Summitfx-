@@ -1,0 +1,61 @@
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBXpqaWs6HgOsRRa7nAEsHJ74XWWXuvMQk",
+  authDomain: "summitfx-4cb86.firebaseapp.com",
+  projectId: "summitfx-4cb86",
+  storageBucket: "summitfx-4cb86.firebasestorage.app",
+  messagingSenderId: "941382391446",
+  appId: "1:941382391446:web:d9198bc79cf26bf82154b7"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let userBalance = 0;
+
+/* GET USER BALANCE */
+onAuthStateChanged(auth, async (user)=>{
+    if(user){
+
+        const ref = doc(db, "users", user.uid);
+        const snap = await getDoc(ref);
+
+        if(snap.exists()){
+            userBalance = snap.data().balance || 0;
+        }
+
+    } else {
+        window.location = "login.html";
+    }
+});
+
+/* CONTINUE WITH CHECK */
+window.goNext = function(){
+
+    const amount = parseFloat(document.getElementById("amount").value);
+    const method = document.getElementById("method").value;
+
+    if(!amount || !method){
+        alert("Fill all fields");
+        return;
+    }
+
+    /* 🔴 BALANCE CHECK */
+    if(amount > userBalance){
+        alert("❌ Insufficient balance");
+        return;
+    }
+
+    localStorage.setItem("withdrawAmount", amount);
+    localStorage.setItem("withdrawMethod", method);
+
+    window.location = "withdraw-process.html";
+};
+
+</script>
