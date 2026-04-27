@@ -1,61 +1,84 @@
-<script type="module">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Withdraw - SummitFX</title>
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:#0b1220;
+    color:white;
+}
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBXpqaWs6HgOsRRa7nAEsHJ74XWWXuvMQk",
-  authDomain: "summitfx-4cb86.firebaseapp.com",
-  projectId: "summitfx-4cb86",
-  storageBucket: "summitfx-4cb86.firebasestorage.app",
-  messagingSenderId: "941382391446",
-  appId: "1:941382391446:web:d9198bc79cf26bf82154b7"
-};
+.container{
+    padding:20px;
+}
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+input, select{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border:none;
+    border-radius:10px;
+    background:#111827;
+    color:white;
+}
 
-let userBalance = 0;
+.btn{
+    width:100%;
+    padding:12px;
+    margin-top:15px;
+    border:none;
+    border-radius:10px;
+    background:#00ffcc;
+    color:black;
+    font-weight:bold;
+}
+</style>
+</head>
 
-/* GET USER BALANCE */
-onAuthStateChanged(auth, async (user)=>{
-    if(user){
+<body>
 
-        const ref = doc(db, "users", user.uid);
-        const snap = await getDoc(ref);
+<div class="container">
 
-        if(snap.exists()){
-            userBalance = snap.data().balance || 0;
-        }
+<h2>Withdraw Funds</h2>
 
-    } else {
-        window.location = "login.html";
-    }
-});
+<input type="number" id="amount" placeholder="Enter amount">
 
-/* CONTINUE WITH CHECK */
-window.goNext = function(){
+<select id="method">
+    <option value="">Select Method</option>
+    <option value="usdt">USDT (TRC-20)</option>
+    <option value="trx">TRON (TRX)</option>
+</select>
 
-    const amount = parseFloat(document.getElementById("amount").value);
+<button class="btn" onclick="proceed()">Continue</button>
+
+</div>
+
+<script>
+
+function proceed(){
+
+    const amount = document.getElementById("amount").value;
     const method = document.getElementById("method").value;
 
     if(!amount || !method){
-        alert("Fill all fields");
+        alert("Please fill all fields");
         return;
     }
 
-    /* 🔴 BALANCE CHECK */
-    if(amount > userBalance){
-        alert("❌ Insufficient balance");
-        return;
-    }
-
+    // SAVE DATA TEMPORARILY
     localStorage.setItem("withdrawAmount", amount);
     localStorage.setItem("withdrawMethod", method);
 
-    window.location = "withdraw-process.html";
-};
+    // REDIRECT ONLY (NO LOGIC HERE)
+    window.location.href = "withdraw-process.html";
+}
 
 </script>
+
+</body>
+</html>
