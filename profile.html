@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Profile - SummitFX</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:linear-gradient(180deg,#0b1220,#05080f);
+    color:white;
+}
+
+/* HEADER */
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px;
+}
+
+.title{
+    font-size:20px;
+    font-weight:bold;
+    background:linear-gradient(45deg,#00ffcc,#00aaff);
+    -webkit-background-clip:text;
+    color:transparent;
+}
+
+/* PROFILE CARD */
+.card{
+    margin:15px;
+    padding:20px;
+    background:#111827;
+    border-radius:15px;
+}
+
+/* PROFILE IMAGE */
+.avatar{
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    object-fit:cover;
+    border:2px solid #00ffcc;
+    display:block;
+    margin:10px auto;
+}
+
+/* LABELS */
+.label{
+    font-size:12px;
+    color:#aaa;
+    margin-top:10px;
+}
+
+/* VALUE */
+.value{
+    font-size:15px;
+    margin-top:3px;
+    color:white;
+}
+
+/* GRID */
+.grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.box{
+    background:#0f172a;
+    padding:10px;
+    border-radius:10px;
+}
+
+.btn{
+    width:100%;
+    padding:12px;
+    margin-top:15px;
+    border:none;
+    border-radius:10px;
+    background:#00ffcc;
+    color:black;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <div class="title">My Profile</div>
+    <button onclick="goBack()" style="background:none;border:none;color:white;">⬅ Back</button>
+</div>
+
+<div class="card">
+
+    <img id="photo" class="avatar" src="https://via.placeholder.com/100">
+
+    <div class="grid">
+
+        <div class="box">
+            <div class="label">First Name</div>
+            <div class="value" id="firstName">-</div>
+        </div>
+
+        <div class="box">
+            <div class="label">Last Name</div>
+            <div class="value" id="lastName">-</div>
+        </div>
+
+        <div class="box">
+            <div class="label">Username</div>
+            <div class="value" id="username">-</div>
+        </div>
+
+        <div class="box">
+            <div class="label">Phone</div>
+            <div class="value" id="phone">-</div>
+        </div>
+
+        <div class="box">
+            <div class="label">Date of Birth</div>
+            <div class="value" id="dob">-</div>
+        </div>
+
+        <div class="box">
+            <div class="label">Gender</div>
+            <div class="value" id="gender">-</div>
+        </div>
+
+        <div class="box">
+            <div class="label">Location</div>
+            <div class="value" id="location">-</div>
+        </div>
+
+        <div class="box">
+            <div class="label">Email</div>
+            <div class="value" id="email">-</div>
+        </div>
+
+    </div>
+
+    <div class="label">Bio</div>
+    <div class="value" id="bio">-</div>
+
+    <div class="label">Address</div>
+    <div class="value" id="address">-</div>
+
+    <button class="btn" onclick="goToEdit()">Edit Profile</button>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBXpqaWs6HgOsRRa7nAEsHJ74XWWXuvMQk",
+  authDomain: "summitfx-4cb86.firebaseapp.com",
+  projectId: "summitfx-4cb86",
+  storageBucket: "summitfx-4cb86.firebasestorage.app",
+  messagingSenderId: "941382391446",
+  appId: "1:941382391446:web:d9198bc79cf26bf82154b7"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* LOAD PROFILE */
+onAuthStateChanged(auth, async (user)=>{
+    if(user){
+
+        email.innerText = user.email;
+
+        const ref = doc(db, "users", user.uid);
+        const snap = await getDoc(ref);
+
+        if(snap.exists()){
+            const d = snap.data();
+
+            firstName.innerText = d.firstName || "-";
+            lastName.innerText = d.lastName || "-";
+            username.innerText = d.username || "-";
+            phone.innerText = d.phone || "-";
+            dob.innerText = d.dob || "-";
+            gender.innerText = d.gender || "-";
+            location.innerText = d.location || "-";
+            bio.innerText = d.bio || "-";
+            address.innerText = d.address || "-";
+
+            if(d.photo){
+                photo.src = d.photo;
+            }
+        }
+
+    } else {
+        window.location = "login.html";
+    }
+});
+
+/* NAV */
+window.goBack = ()=> window.location="dashboard.html";
+window.goToEdit = ()=> window.location="edit-profile.html";
+
+</script>
+
+</body>
+</html>
