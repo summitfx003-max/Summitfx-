@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KYC Verification - SummitFX</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:linear-gradient(180deg,#0b1220,#05080f);
+    color:white;
+}
+
+.header{
+    padding:15px;
+    font-size:20px;
+    font-weight:bold;
+    background:linear-gradient(45deg,#00ffcc,#00aaff);
+    -webkit-background-clip:text;
+    color:transparent;
+}
+
+.container{
+    padding:20px;
+}
+
+.card{
+    background:#111827;
+    padding:20px;
+    border-radius:15px;
+    margin-bottom:15px;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border:none;
+    border-radius:10px;
+    background:#0b1220;
+    color:white;
+}
+
+.btn{
+    width:100%;
+    padding:12px;
+    margin-top:15px;
+    border:none;
+    border-radius:10px;
+    background:#00ffcc;
+    color:black;
+    font-weight:bold;
+}
+
+.note{
+    font-size:12px;
+    color:#aaa;
+    margin-top:10px;
+}
+
+img{
+    width:100%;
+    margin-top:10px;
+    border-radius:10px;
+    display:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">KYC Verification</div>
+
+<div class="container">
+
+<div class="card">
+
+    <input id="name" placeholder="Full Name">
+    <input id="dob" type="date">
+    <input id="country" placeholder="Country">
+    <input id="idNumber" placeholder="ID Number">
+
+</div>
+
+<div class="card">
+
+    <label>Upload ID (Front)</label>
+    <input type="file" id="idFront" accept="image/*">
+
+    <label>Upload Selfie</label>
+    <input type="file" id="selfie" accept="image/*">
+
+    <div class="note">
+        ⚠️ Ensure clear images. Blurry uploads may delay verification.
+    </div>
+
+</div>
+
+<button class="btn" onclick="submitKYC()">Submit KYC</button>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBXpqaWs6HgOsRRa7nAEsHJ74XWWXuvMQk",
+  authDomain: "summitfx-4cb86.firebaseapp.com",
+  projectId: "summitfx-4cb86",
+  storageBucket: "summitfx-4cb86.firebasestorage.app",
+  messagingSenderId: "941382391446",
+  appId: "1:941382391446:web:d9198bc79cf26bf82154b7"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+let userId = null;
+
+/* AUTH */
+onAuthStateChanged(auth,(user)=>{
+    if(user){
+        userId = user.uid;
+    } else {
+        window.location = "login.html";
+    }
+});
+
+/* UPLOAD FILE FUNCTION */
+async function uploadFile(file, path){
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, file);
+    return await getDownloadURL(storageRef);
+}
+
+/* SUBMIT KYC */
+window.submitKYC = async function(){
+
+    const name = document.getElementById("name").value;
+    const dob = document.getElementById("dob").value;
+    const country = document.getElementById("country").value;
+    const idNumber = document.getElementById("idNumber").value;
+
+    const idFile = document.getElementById("idFront").files[0];
+    const selfieFile = document.getElementById("selfie").files[0];
+
+    if(!name || !dob || !country || !idNumber || !idFile || !selfieFile){
+        alert("Fill all fields and upload images");
+        return;
+    }
+
+    try{
+
+        /* UPLOAD IMAGES */
+        const idUrl = await uploadFile(idFile, `kyc/${userId}/id.jpg`);
+        const selfieUrl = await uploadFile(selfieFile, `kyc/${userId}/selfie.jpg`);
+
+        /* SAVE TO FIRESTORE */
+        await setDoc(doc(db,"kyc",userId),{
+            name,
+            dob,
+            country,
+            idNumber,
+            idUrl,
+            selfieUrl,
+            status:"pending",
+            createdAt:new Date().toISOString()
+        });
+
+        alert("KYC submitted successfully");
+        window.location = "dashboard.html";
+
+    }catch(err){
+        alert("Error: " + err.message);
+    }
+}
+
+</script>
+
+</body>
+</html>
