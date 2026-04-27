@@ -39,16 +39,21 @@ body {
 .label {
     color:#aaa;
     font-size:13px;
+    margin-top:10px;
 }
 
-input {
+input, textarea, select {
     width:100%;
     padding:12px;
     border:none;
     border-radius:10px;
-    margin-top:10px;
+    margin-top:5px;
     background:#111827;
     color:white;
+}
+
+textarea {
+    resize:none;
 }
 
 .btn {
@@ -59,7 +64,7 @@ input {
     background:linear-gradient(45deg,#00ffcc,#0099ff);
     color:black;
     font-weight:bold;
-    margin-top:10px;
+    margin-top:15px;
     cursor:pointer;
 }
 
@@ -73,7 +78,6 @@ input {
     border:2px solid #00ffcc;
 }
 </style>
-
 </head>
 
 <body>
@@ -86,21 +90,49 @@ input {
 <div class="card">
 
     <img id="avatar" class="avatar" src="https://via.placeholder.com/100">
-
     <input type="file" id="photo">
 
-    <div class="label">Email (cannot be changed here)</div>
+    <div class="label">Email</div>
     <input id="email" disabled>
 
-    <div class="label">Display Name</div>
-    <input id="name" placeholder="Enter your name">
+    <div class="label">First Name</div>
+    <input id="firstName">
+
+    <div class="label">Last Name</div>
+    <input id="lastName">
+
+    <div class="label">Username</div>
+    <input id="username">
+
+    <div class="label">Phone Number</div>
+    <input id="phone">
+
+    <div class="label">Date of Birth</div>
+    <input type="date" id="dob">
+
+    <div class="label">Gender (optional)</div>
+    <select id="gender">
+        <option value="">Select</option>
+        <option>Male</option>
+        <option>Female</option>
+        <option>Other</option>
+    </select>
+
+    <div class="label">Bio / About Me</div>
+    <textarea id="bio"></textarea>
+
+    <div class="label">Location (City / Country)</div>
+    <input id="location">
+
+    <div class="label">Address</div>
+    <input id="address">
 
     <button class="btn" onclick="updateProfile()">Save Changes</button>
 </div>
 
 <div class="card">
     <div class="label">Change Password</div>
-    <input type="password" id="newPassword" placeholder="New password">
+    <input type="password" id="newPassword">
     <button class="btn" onclick="updatePassword()">Update Password</button>
 </div>
 
@@ -108,9 +140,8 @@ input {
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-/* SAME CONFIG AS YOUR SYSTEM */
 const firebaseConfig = {
   apiKey: "AIzaSyBXpqaWs6HgOsRRa7nAEsHJ74XWWXuvMQk",
   authDomain: "summitfx-4cb86.firebaseapp.com",
@@ -124,24 +155,33 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let currentUser = null;
+let currentUser;
 
-/* LOAD USER */
+/* LOAD USER DATA */
 onAuthStateChanged(auth, async (user)=>{
     if(user){
         currentUser = user;
-        document.getElementById("email").value = user.email;
+        email.value = user.email;
 
         const ref = doc(db, "users", user.uid);
         const snap = await getDoc(ref);
 
         if(snap.exists()){
-            const data = snap.data();
-            document.getElementById("name").value = data.name || "";
-            if(data.photo){
-                document.getElementById("avatar").src = data.photo;
-            }
+            const d = snap.data();
+
+            firstName.value = d.firstName || "";
+            lastName.value = d.lastName || "";
+            username.value = d.username || "";
+            phone.value = d.phone || "";
+            dob.value = d.dob || "";
+            gender.value = d.gender || "";
+            bio.value = d.bio || "";
+            location.value = d.location || "";
+            address.value = d.address || "";
+
+            if(d.photo) avatar.src = d.photo;
         }
+
     } else {
         window.location = "login.html";
     }
@@ -150,70 +190,52 @@ onAuthStateChanged(auth, async (user)=>{
 /* SAVE PROFILE */
 window.updateProfile = async function(){
 
-    const name = document.getElementById("name").value;
-    const file = document.getElementById("photo").files[0];
+    const file = photo.files[0];
 
-    if(!name){
-        alert("Enter your name");
-        return;
-    }
-
-    let photoData = null;
+    let data = {
+        firstName: firstName.value,
+        lastName: lastName.value,
+        username: username.value,
+        phone: phone.value,
+        dob: dob.value,
+        gender: gender.value,
+        bio: bio.value,
+        location: location.value,
+        address: address.value
+    };
 
     if(file){
         const reader = new FileReader();
         reader.readAsDataURL(file);
 
-        reader.onload = async function(){
-            photoData = reader.result;
-
-            await saveData(name, photoData);
+        reader.onload = async ()=>{
+            data.photo = reader.result;
+            await save(data);
         }
     } else {
-        await saveData(name, null);
+        await save(data);
     }
 };
 
-async function saveData(name, photo){
-
+async function save(data){
     const ref = doc(db, "users", currentUser.uid);
-
-    const data = { name };
-
-    if(photo){
-        data.photo = photo;
-    }
-
     await setDoc(ref, data, { merge:true });
-
     alert("Profile updated");
-
-    if(photo){
-        document.getElementById("avatar").src = photo;
-    }
 }
 
-/* UPDATE PASSWORD */
+/* PASSWORD */
 window.updatePassword = async function(){
-    const newPass = document.getElementById("newPassword").value;
-
-    if(!newPass){
-        alert("Enter a password");
-        return;
-    }
+    if(!newPassword.value) return alert("Enter password");
 
     try{
-        await updatePassword(auth.currentUser, newPass);
-        alert("Password updated successfully");
-    }catch(err){
-        alert(err.message);
+        await updatePassword(auth.currentUser, newPassword.value);
+        alert("Password updated");
+    }catch(e){
+        alert(e.message);
     }
 };
 
-/* BACK */
-window.goBack = function(){
-    window.location = "dashboard.html";
-};
+window.goBack = ()=> window.location = "dashboard.html";
 
 </script>
 
