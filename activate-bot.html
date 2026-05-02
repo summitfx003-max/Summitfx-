@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Activate Bot - SummitFX</title>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:linear-gradient(180deg,#0b1220,#05080f);
+    color:white;
+}
+
+/* HEADER */
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px;
+    border-bottom:1px solid #1f2937;
+}
+
+.logo{
+    font-size:20px;
+    font-weight:bold;
+    background:linear-gradient(45deg,#00ffcc,#00aaff);
+    -webkit-background-clip:text;
+    color:transparent;
+}
+
+.back{
+    color:white;
+    text-decoration:none;
+}
+
+/* HERO */
+.hero{
+    padding:20px;
+    text-align:center;
+}
+
+.hero h1{
+    color:#00ffcc;
+}
+
+.hero p{
+    color:#aaa;
+}
+
+/* STATS */
+.stats{
+    display:flex;
+    justify-content:space-around;
+    margin:20px;
+}
+
+.stat{
+    background:#111827;
+    padding:15px;
+    border-radius:12px;
+    text-align:center;
+    width:30%;
+}
+
+.stat h2{
+    color:#00ffcc;
+}
+
+/* PLANS */
+.card{
+    margin:15px;
+    padding:20px;
+    background:#111827;
+    border-radius:15px;
+    border:1px solid #1f2937;
+}
+
+.btn{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border:none;
+    border-radius:10px;
+    background:linear-gradient(45deg,#00ffcc,#0099ff);
+    color:black;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+/* WARNING */
+.warning{
+    margin:15px;
+    padding:15px;
+    background:#3b1f1f;
+    border-left:5px solid red;
+    border-radius:10px;
+    color:#ffcccc;
+}
+
+/* STATUS */
+.status{
+    margin:15px;
+    padding:15px;
+    background:#111827;
+    border-radius:12px;
+}
+
+.green{
+    color:#00ffcc;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+<div class="logo">SummitFX Bot</div>
+<a class="back" href="dashboard.html">⬅ Back</a>
+</div>
+
+<div class="hero">
+<h1>AI Trading Bot</h1>
+<p>Automated trading system for crypto & forex markets</p>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+<div class="stat">
+<h2>100%</h2>
+<p>Win Rate (Simulated)</p>
+</div>
+
+<div class="stat">
+<h2>+8%</h2>
+<p>Daily Return</p>
+</div>
+
+<div class="stat">
+<h2>24/7</h2>
+<p>Active Trading</p>
+</div>
+</div>
+
+<!-- PLANS -->
+<div class="card">
+<h3>Starter Bot</h3>
+<p>$100 - $499</p>
+<button class="btn" onclick="activateBot('starter',100)">Activate</button>
+</div>
+
+<div class="card">
+<h3>Pro Bot</h3>
+<p>$500 - $1999</p>
+<button class="btn" onclick="activateBot('pro',500)">Activate</button>
+</div>
+
+<div class="card">
+<h3>Elite Bot</h3>
+<p>$2000+</p>
+<button class="btn" onclick="activateBot('elite',2000)">Activate</button>
+</div>
+
+<!-- WARNING -->
+<div class="warning">
+⚠ Ensure you have enough wallet balance before activation.  
+Bot starts immediately after activation.
+</div>
+
+<!-- STATUS -->
+<div class="status">
+<h3>Bot Status</h3>
+<p id="botStatus">Inactive</p>
+</div>
+
+<script>
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBXpqaWs6HgOsRRa7nAEsHJ74XWWXuvMQk",
+  authDomain: "summitfx-4cb86.firebaseapp.com",
+  projectId: "summitfx-4cb86",
+  storageBucket: "summitfx-4cb86.firebasestorage.app",
+  messagingSenderId: "941382391446",
+  appId: "1:941382391446:web:d9198bc79cf26bf82154b7"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.firestore();
+
+/* CHECK USER */
+firebase.auth().onAuthStateChanged(user=>{
+    if(!user){
+        window.location="login.html";
+    }else{
+        db.collection("users").doc(user.uid).get()
+        .then(doc=>{
+            if(doc.exists && doc.data().bot){
+                document.getElementById("botStatus").innerText="Active";
+                document.getElementById("botStatus").classList.add("green");
+            }
+        });
+    }
+});
+
+/* ACTIVATE BOT */
+function activateBot(plan,amount){
+
+let user = firebase.auth().currentUser;
+
+if(!user){
+alert("Login first");
+return;
+}
+
+db.collection("users").doc(user.uid).get()
+.then(doc=>{
+
+let balance = doc.data().balance || 0;
+
+if(balance < amount){
+alert("Insufficient balance");
+return;
+}
+
+db.collection("users").doc(user.uid).update({
+bot:true,
+botPlan:plan,
+balance: balance - amount
+});
+
+document.getElementById("botStatus").innerText="Active";
+document.getElementById("botStatus").classList.add("green");
+
+alert("Bot Activated Successfully!");
+
+window.location="dashboard.html";
+
+});
+
+}
+
+</script>
+
+</body>
+</html>
