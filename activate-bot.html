@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bot System - SummitFX</title>
+<title>Activate Bot - SummitFX</title>
 
 <style>
 body{
@@ -15,45 +15,58 @@ body{
 
 .header{
     padding:15px;
+    border-bottom:1px solid #1f2937;
     display:flex;
     justify-content:space-between;
-    border-bottom:1px solid #1f2937;
 }
 
 .logo{
+    font-size:20px;
+    font-weight:bold;
     background:linear-gradient(45deg,#00ffcc,#00aaff);
     -webkit-background-clip:text;
     color:transparent;
-    font-size:20px;
-    font-weight:bold;
 }
 
 .card{
-    margin:15px;
-    padding:20px;
+    margin:20px;
+    padding:25px;
     background:#111827;
     border-radius:15px;
+    border:1px solid #1f2937;
+    text-align:center;
+}
+
+.title{
+    font-size:22px;
+    margin-bottom:10px;
+}
+
+.text{
+    color:#aaa;
+    font-size:14px;
 }
 
 .btn{
     width:100%;
-    padding:12px;
-    margin-top:10px;
+    padding:15px;
+    margin-top:20px;
     border:none;
     border-radius:10px;
     background:linear-gradient(45deg,#00ffcc,#0099ff);
     color:black;
     font-weight:bold;
+    cursor:pointer;
+    font-size:16px;
 }
 
-.status{
+.badge{
+    display:inline-block;
     margin-top:10px;
-    color:#00ffcc;
-}
-
-.small{
-    color:#aaa;
-    font-size:13px;
+    background:#0f766e;
+    padding:6px 12px;
+    border-radius:20px;
+    font-size:12px;
 }
 </style>
 </head>
@@ -65,113 +78,29 @@ body{
 </div>
 
 <div class="card">
-<h2>AI Trading Bot System</h2>
-<p class="small">Automated trading engine (simulation system)</p>
 
-<div id="status">Status: Loading...</div>
+<div class="title">AI Trading Bot System</div>
 
-<button class="btn" onclick="activate('starter',100,24)">Starter Bot - $100</button>
-<button class="btn" onclick="activate('pro',500,24)">Pro Bot - $500</button>
-<button class="btn" onclick="activate('elite',2000,72)">Elite Bot - $2000</button>
+<div class="badge">100% Automated Execution</div>
+
+<p class="text">
+Choose from professional AI trading bots with different performance levels and durations.
+</p>
+
+<p class="text">
+⚠️ Each bot requires activation capital before starting trading.
+</p>
+
+<button class="btn" onclick="goNext()">
+Continue to Bot Selection
+</button>
+
 </div>
 
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBXpqaWs6HgOsRRa7nAEsHJ74XWWXuvMQk",
-  authDomain: "summitfx-4cb86.firebaseapp.com",
-  projectId: "summitfx-4cb86",
-  storageBucket: "summitfx-4cb86.firebasestorage.app",
-  messagingSenderId: "941382391446",
-  appId: "1:941382391446:web:d9198bc79cf26bf82154b7"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-let user = null;
-let userData = null;
-
-/* AUTH */
-onAuthStateChanged(auth, async (u)=>{
-    if(!u){
-        window.location="login.html";
-        return;
-    }
-
-    user = u;
-
-    const ref = doc(db,"users",user.uid);
-    const snap = await getDoc(ref);
-
-    if(!snap.exists()){
-        await setDoc(ref,{
-            balance:0,
-            bot:{
-                active:false
-            }
-        });
-        userData = {balance:0};
-    }else{
-        userData = snap.data();
-    }
-
-    checkBotStatus();
-});
-
-/* CHECK BOT STATUS */
-function checkBotStatus(){
-    if(userData.bot?.active){
-        document.getElementById("status").innerText =
-        "Status: ACTIVE (" + userData.bot.level + ")";
-    }else{
-        document.getElementById("status").innerText =
-        "Status: INACTIVE";
-    }
+<script>
+function goNext(){
+    window.location.href = "bot-select.html";
 }
-
-/* ACTIVATE BOT */
-window.activate = async function(level, cost, hours){
-
-if(!user) return;
-
-const ref = doc(db,"users",user.uid);
-const snap = await getDoc(ref);
-
-let data = snap.data();
-let balance = Number(data.balance) || 0;
-
-if(balance < cost){
-alert("Insufficient balance");
-return;
-}
-
-/* BOT OBJECT */
-let botData = {
-    active:true,
-    level:level,
-    startTime:Date.now(),
-    durationHours:hours,
-    profit:0,
-    status:"active"
-};
-
-/* SAVE */
-await updateDoc(ref,{
-    balance: balance - cost,
-    bot: botData
-});
-
-alert("Bot Activated: " + level.toUpperCase());
-window.location="dashboard.html";
-
-};
-
 </script>
 
 </body>
