@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings - SummitFX</title>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#05080f;
+    color:white;
+    font-family:Arial;
+}
+
+/* HEADER */
+.header{
+    background:#0b1220;
+    padding:15px 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:1px solid #1f2937;
+    position:sticky;
+    top:0;
+    z-index:1000;
+}
+
+.logo{
+    font-size:24px;
+    font-weight:bold;
+    background:linear-gradient(45deg,#00ffcc,#0099ff);
+    -webkit-background-clip:text;
+    color:transparent;
+}
+
+.back-btn{
+    color:white;
+    text-decoration:none;
+    font-size:14px;
+}
+
+/* PROFILE */
+.profile-box{
+    padding:25px 20px;
+    text-align:center;
+}
+
+.profile-photo{
+    width:100px;
+    height:100px;
+    border-radius:50%;
+    object-fit:cover;
+    border:3px solid #00ffcc;
+    background:#111827;
+}
+
+.name{
+    margin-top:15px;
+    font-size:22px;
+    font-weight:bold;
+}
+
+.email{
+    color:#aaa;
+    margin-top:5px;
+}
+
+.status{
+    margin-top:10px;
+    color:#00ff99;
+    font-size:14px;
+}
+
+/* SETTINGS SECTION */
+.section{
+    margin:20px;
+}
+
+.section-title{
+    margin-bottom:12px;
+    color:#00ffcc;
+    font-size:18px;
+}
+
+/* CARD */
+.card{
+    background:#111827;
+    border:1px solid #1f2937;
+    border-radius:15px;
+    overflow:hidden;
+}
+
+.item{
+    padding:18px;
+    border-bottom:1px solid #1f2937;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    cursor:pointer;
+}
+
+.item:last-child{
+    border-bottom:none;
+}
+
+.item:hover{
+    background:#0f172a;
+}
+
+.left{
+    display:flex;
+    flex-direction:column;
+}
+
+.title{
+    font-size:16px;
+}
+
+.subtitle{
+    font-size:12px;
+    color:#888;
+    margin-top:4px;
+}
+
+.arrow{
+    color:#00ffcc;
+}
+
+/* BUTTONS */
+.logout-btn{
+    width:calc(100% - 40px);
+    margin:20px;
+    padding:15px;
+    border:none;
+    border-radius:12px;
+    background:#ff3b3b;
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.logout-btn:hover{
+    opacity:0.9;
+}
+
+/* FOOTER */
+.footer{
+    text-align:center;
+    padding:30px;
+    color:#666;
+}
+
+/* MOBILE */
+@media(max-width:768px){
+
+.name{
+    font-size:20px;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+
+<div class="logo">SummitFX</div>
+
+<a href="dashboard.html" class="back-btn">⬅ Back</a>
+
+</div>
+
+<!-- PROFILE -->
+<div class="profile-box">
+
+<img id="profilePhoto"
+class="profile-photo"
+src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
+
+<div class="name" id="userName">Loading...</div>
+
+<div class="email" id="userEmail">Loading...</div>
+
+<div class="status" id="kycStatus">
+KYC Status: Pending
+</div>
+
+</div>
+
+<!-- ACCOUNT -->
+<div class="section">
+
+<div class="section-title">👤 Account Settings</div>
+
+<div class="card">
+
+<div class="item" onclick="goTo('edit-profile.html')">
+
+<div class="left">
+<div class="title">Edit Profile</div>
+<div class="subtitle">
+Update your profile information
+</div>
+</div>
+
+<div class="arrow">›</div>
+
+</div>
+
+<div class="item" onclick="changePassword()">
+
+<div class="left">
+<div class="title">Change Password</div>
+<div class="subtitle">
+Secure your account
+</div>
+</div>
+
+<div class="arrow">›</div>
+
+</div>
+
+<div class="item">
+
+<div class="left">
+<div class="title">Email Address</div>
+<div class="subtitle" id="emailDisplay">
+Loading...
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- SECURITY -->
+<div class="section">
+
+<div class="section-title">🔐 Security</div>
+
+<div class="card">
+
+<div class="item">
+
+<div class="left">
+<div class="title">Security Level</div>
+<div class="subtitle">
+Medium Protection
+</div>
+</div>
+
+<div style="color:#00ff99;">Active</div>
+
+</div>
+
+<div class="item">
+
+<div class="left">
+<div class="title">Last Login</div>
+<div class="subtitle" id="lastLogin">
+Checking...
+</div>
+</div>
+
+</div>
+
+<div class="item" onclick="goTo('kyc.html')">
+
+<div class="left">
+<div class="title">Verify KYC</div>
+<div class="subtitle">
+Complete identity verification
+</div>
+</div>
+
+<div class="arrow">›</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- NOTIFICATIONS -->
+<div class="section">
+
+<div class="section-title">🔔 Notifications</div>
+
+<div class="card">
+
+<div class="item">
+
+<div class="left">
+<div class="title">Email Notifications</div>
+<div class="subtitle">
+Receive account alerts
+</div>
+</div>
+
+<input type="checkbox" checked>
+
+</div>
+
+<div class="item">
+
+<div class="left">
+<div class="title">Trading Alerts</div>
+<div class="subtitle">
+Receive market updates
+</div>
+</div>
+
+<input type="checkbox" checked>
+
+</div>
+
+<div class="item">
+
+<div class="left">
+<div class="title">Withdrawal Alerts</div>
+<div class="subtitle">
+Get notified on withdrawals
+</div>
+</div>
+
+<input type="checkbox" checked>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- PREFERENCES -->
+<div class="section">
+
+<div class="section-title">⚙ Preferences</div>
+
+<div class="card">
+
+<div class="item">
+
+<div class="left">
+<div class="title">Currency</div>
+<div class="subtitle">
+USD ($)
+</div>
+</div>
+
+</div>
+
+<div class="item">
+
+<div class="left">
+<div class="title">Theme</div>
+<div class="subtitle">
+Dark Mode
+</div>
+</div>
+
+</div>
+
+<div class="item">
+
+<div class="left">
+<div class="title">Language</div>
+<div class="subtitle">
+English
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- SUPPORT -->
+<div class="section">
+
+<div class="section-title">📞 Support</div>
+
+<div class="card">
+
+<div class="item">
+
+<div class="left">
+<div class="title">Help Center</div>
+<div class="subtitle">
+FAQs and guides
+</div>
+</div>
+
+<div class="arrow">›</div>
+
+</div>
+
+<div class="item">
+
+<div class="left">
+<div class="title">Contact Support</div>
+<div class="subtitle">
+24/7 SummitFX support
+</div>
+</div>
+
+<div class="arrow">›</div>
+
+</div>
+
+<div class="item">
+
+<div class="left">
+<div class="title">Terms & Privacy</div>
+<div class="subtitle">
+Read our policies
+</div>
+</div>
+
+<div class="arrow">›</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- LOGOUT -->
+<button class="logout-btn" onclick="logout()">
+Logout
+</button>
+
+<!-- FOOTER -->
+<div class="footer">
+
+© 2026 SummitFX Trading Corporation
+
+</div>
+
+<!-- FIREBASE -->
+<script>
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBXpqaWs6HgOsRRa7nAEsHJ74XWWXuvMQk",
+  authDomain: "summitfx-4cb86.firebaseapp.com",
+  projectId: "summitfx-4cb86",
+  storageBucket: "summitfx-4cb86.firebasestorage.app",
+  messagingSenderId: "941382391446",
+  appId: "1:941382391446:web:d9198bc79cf26bf82154b7"
+};
+
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+
+const db = firebase.firestore();
+
+/* AUTH */
+firebase.auth().onAuthStateChanged(user=>{
+
+    if(user){
+
+        document.getElementById("userEmail").innerText =
+        user.email;
+
+        document.getElementById("emailDisplay").innerText =
+        user.email;
+
+        document.getElementById("lastLogin").innerText =
+        user.metadata.lastSignInTime;
+
+        db.collection("users")
+        .doc(user.uid)
+        .get()
+        .then(doc=>{
+
+            if(doc.exists){
+
+                const data = doc.data();
+
+                document.getElementById("userName").innerText =
+                data.firstName + " " + data.lastName || "SummitFX User";
+
+                if(data.photoURL){
+
+                    document.getElementById("profilePhoto").src =
+                    data.photoURL;
+
+                }
+
+                if(data.kycStatus){
+
+                    document.getElementById("kycStatus").innerText =
+                    "KYC Status: " + data.kycStatus;
+
+                }
+
+            }
+
+        });
+
+    }else{
+
+        window.location = "login.html";
+
+    }
+
+});
+
+/* NAVIGATION */
+function goTo(page){
+    window.location.href = page;
+}
+
+/* CHANGE PASSWORD */
+function changePassword(){
+
+alert("Go to Edit Profile to change your password.");
+
+window.location = "edit-profile.html";
+
+}
+
+/* LOGOUT */
+function logout(){
+
+firebase.auth().signOut()
+.then(()=>{
+
+window.location = "login.html";
+
+});
+
+}
+
+</script>
+
+</body>
+</html>
