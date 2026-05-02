@@ -1,141 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Edit Profile - SummitFX</title>
-
-<style>
-body {
-    margin:0;
-    font-family: 'Segoe UI', Arial;
-    background: linear-gradient(180deg,#0b1220,#05080f);
-    color:white;
-}
-
-.header {
-    padding:15px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
-
-.title {
-    font-size:20px;
-    font-weight:bold;
-    background: linear-gradient(45deg,#00ffcc,#00aaff);
-    -webkit-background-clip:text;
-    color:transparent;
-}
-
-.card {
-    margin:20px;
-    padding:20px;
-    background: rgba(255,255,255,0.05);
-    border-radius:15px;
-    border:1px solid rgba(255,255,255,0.08);
-}
-
-.label {
-    color:#aaa;
-    font-size:13px;
-    margin-top:10px;
-}
-
-input, textarea, select {
-    width:100%;
-    padding:12px;
-    border:none;
-    border-radius:10px;
-    margin-top:5px;
-    background:#111827;
-    color:white;
-}
-
-textarea {
-    resize:none;
-}
-
-.btn {
-    width:100%;
-    padding:12px;
-    border:none;
-    border-radius:10px;
-    background:linear-gradient(45deg,#00ffcc,#0099ff);
-    color:black;
-    font-weight:bold;
-    margin-top:15px;
-    cursor:pointer;
-}
-
-.avatar {
-    width:100px;
-    height:100px;
-    border-radius:50%;
-    object-fit:cover;
-    display:block;
-    margin:10px auto;
-    border:2px solid #00ffcc;
-}
-</style>
-</head>
-
-<body>
-
-<div class="header">
-    <div class="title">Edit Profile</div>
-    <button onclick="goBack()" style="background:none;border:none;color:white;">⬅ Back</button>
-</div>
-
-<div class="card">
-
-    <img id="avatar" class="avatar" src="https://via.placeholder.com/100">
-    <input type="file" id="photo">
-
-    <div class="label">Email</div>
-    <input id="email" disabled>
-
-    <div class="label">First Name</div>
-    <input id="firstName">
-
-    <div class="label">Last Name</div>
-    <input id="lastName">
-
-    <div class="label">Username</div>
-    <input id="username">
-
-    <div class="label">Phone Number</div>
-    <input id="phone">
-
-    <div class="label">Date of Birth</div>
-    <input type="date" id="dob">
-
-    <div class="label">Gender (optional)</div>
-    <select id="gender">
-        <option value="">Select</option>
-        <option>Male</option>
-        <option>Female</option>
-        <option>Other</option>
-    </select>
-
-    <div class="label">Bio / About Me</div>
-    <textarea id="bio"></textarea>
-
-    <div class="label">Location (City / Country)</div>
-    <input id="location">
-
-    <div class="label">Address</div>
-    <input id="address">
-
-    <button class="btn" onclick="updateProfile()">Save Changes</button>
-</div>
-
-<div class="card">
-    <div class="label">Change Password</div>
-    <input type="password" id="newPassword">
-    <button class="btn" onclick="updatePassword()">Update Password</button>
-</div>
-
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
@@ -157,40 +19,46 @@ const db = getFirestore(app);
 
 let currentUser;
 
-/* LOAD USER DATA */
+/* LOAD USER */
 onAuthStateChanged(auth, async (user)=>{
-    if(user){
-        currentUser = user;
-        email.value = user.email;
-
-        const ref = doc(db, "users", user.uid);
-        const snap = await getDoc(ref);
-
-        if(snap.exists()){
-            const d = snap.data();
-
-            firstName.value = d.firstName || "";
-            lastName.value = d.lastName || "";
-            username.value = d.username || "";
-            phone.value = d.phone || "";
-            dob.value = d.dob || "";
-            gender.value = d.gender || "";
-            bio.value = d.bio || "";
-            location.value = d.location || "";
-            address.value = d.address || "";
-
-            if(d.photo) avatar.src = d.photo;
-        }
-
-    } else {
+    if(!user){
         window.location = "login.html";
+        return;
+    }
+
+    currentUser = user;
+
+    document.getElementById("email").value = user.email;
+
+    const ref = doc(db, "users", user.uid);
+    const snap = await getDoc(ref);
+
+    if(snap.exists()){
+        const d = snap.data();
+
+        firstName.value = d.firstName || "";
+        lastName.value = d.lastName || "";
+        username.value = d.username || "";
+        phone.value = d.phone || "";
+        dob.value = d.dob || "";
+        gender.value = d.gender || "";
+        bio.value = d.bio || "";
+        location.value = d.location || "";
+        address.value = d.address || "";
+
+        if(d.photo) avatar.src = d.photo;
     }
 });
 
 /* SAVE PROFILE */
 window.updateProfile = async function(){
 
-    const file = photo.files[0];
+    if(!currentUser){
+        alert("User not ready");
+        return;
+    }
+
+    const file = photo.files ? photo.files[0] : null;
 
     let data = {
         firstName: firstName.value,
@@ -204,31 +72,36 @@ window.updateProfile = async function(){
         address: address.value
     };
 
+    const saveToFirestore = async (finalData)=>{
+        const ref = doc(db, "users", currentUser.uid);
+        await setDoc(ref, finalData, { merge:true });
+        alert("Profile updated successfully");
+    };
+
     if(file){
         const reader = new FileReader();
         reader.readAsDataURL(file);
 
         reader.onload = async ()=>{
             data.photo = reader.result;
-            await save(data);
-        }
+            await saveToFirestore(data);
+        };
     } else {
-        await save(data);
+        await saveToFirestore(data);
     }
 };
 
-async function save(data){
-    const ref = doc(db, "users", currentUser.uid);
-    await setDoc(ref, data, { merge:true });
-    alert("Profile updated");
-}
-
 /* PASSWORD */
 window.updatePassword = async function(){
-    if(!newPassword.value) return alert("Enter password");
+    const newPass = document.getElementById("newPassword").value;
+
+    if(!newPass){
+        alert("Enter password");
+        return;
+    }
 
     try{
-        await updatePassword(auth.currentUser, newPassword.value);
+        await updatePassword(auth.currentUser, newPass);
         alert("Password updated");
     }catch(e){
         alert(e.message);
@@ -238,6 +111,3 @@ window.updatePassword = async function(){
 window.goBack = ()=> window.location = "dashboard.html";
 
 </script>
-
-</body>
-</html>
