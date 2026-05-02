@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Select Bot - SummitFX</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:linear-gradient(180deg,#0b1220,#05080f);
+    color:white;
+}
+
+.header{
+    padding:15px;
+    border-bottom:1px solid #1f2937;
+    display:flex;
+    justify-content:space-between;
+}
+
+.logo{
+    font-size:20px;
+    font-weight:bold;
+    background:linear-gradient(45deg,#00ffcc,#00aaff);
+    -webkit-background-clip:text;
+    color:transparent;
+}
+
+.container{
+    padding:15px;
+}
+
+.card{
+    background:#111827;
+    padding:20px;
+    border-radius:15px;
+    margin-bottom:15px;
+    border:1px solid #1f2937;
+}
+
+.title{
+    font-size:18px;
+    color:#00ffcc;
+}
+
+.badge{
+    display:inline-block;
+    background:#0f766e;
+    padding:5px 10px;
+    border-radius:10px;
+    font-size:12px;
+    margin-top:5px;
+}
+
+.text{
+    color:#aaa;
+    font-size:14px;
+    margin-top:5px;
+}
+
+.btn{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border:none;
+    border-radius:10px;
+    background:linear-gradient(45deg,#00ffcc,#0099ff);
+    color:black;
+    font-weight:bold;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+<div class="logo">Select Your Bot</div>
+</div>
+
+<div class="container">
+
+<div class="card">
+<div class="title">Starter Bot</div>
+<div class="badge">80% Win Rate</div>
+<div class="text">Investment: $100</div>
+<div class="text">Duration: 24 Hours</div>
+<button class="btn" onclick="activate('starter',100,24)">Activate Starter</button>
+</div>
+
+<div class="card">
+<div class="title">Pro Bot</div>
+<div class="badge">90% Win Rate</div>
+<div class="text">Investment: $500</div>
+<div class="text">Duration: 24 Hours</div>
+<button class="btn" onclick="activate('pro',500,24)">Activate Pro</button>
+</div>
+
+<div class="card">
+<div class="title">Elite Bot</div>
+<div class="badge">95% Win Rate</div>
+<div class="text">Investment: $2000</div>
+<div class="text">Duration: 72 Hours</div>
+<button class="btn" onclick="activate('elite',2000,72)">Activate Elite</button>
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBXpqaWs6HgOsRRa7nAEsHJ74XWWXuvMQk",
+  authDomain: "summitfx-4cb86.firebaseapp.com",
+  projectId: "summitfx-4cb86",
+  storageBucket: "summitfx-4cb86.firebasestorage.app",
+  messagingSenderId: "941382391446",
+  appId: "1:941382391446:web:d9198bc79cf26bf82154b7"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let user = null;
+
+/* AUTH CHECK */
+onAuthStateChanged(auth,(u)=>{
+    if(!u){
+        window.location="login.html";
+    }else{
+        user = u;
+    }
+});
+
+/* ACTIVATE BOT */
+window.activate = async function(type,cost,hours){
+
+if(!user){
+alert("Login required");
+return;
+}
+
+const ref = doc(db,"users",user.uid);
+const snap = await getDoc(ref);
+
+if(!snap.exists()){
+alert("User account not found");
+return;
+}
+
+let data = snap.data();
+let balance = Number(data.balance) || 0;
+
+if(balance < cost){
+alert("Insufficient balance");
+return;
+}
+
+/* SAVE BOT */
+await updateDoc(ref,{
+balance: balance - cost,
+bot:{
+    active:true,
+    type:type,
+    startTime:Date.now(),
+    durationHours:hours,
+    profit:0,
+    status:"active"
+}
+});
+
+alert(type.toUpperCase() + " BOT ACTIVATED SUCCESSFULLY!");
+
+window.location="dashboard.html";
+
+};
+
+</script>
+
+</body>
+</html>
