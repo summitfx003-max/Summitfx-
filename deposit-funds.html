@@ -106,7 +106,47 @@ Sending to the wrong network may result in permanent loss of funds.
 
 </div>
 
-<script>
+<!-- 🔥 FIREBASE ADDED -->
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+
+import {
+    getAuth,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+
+import {
+    getFirestore,
+    collection,
+    addDoc
+} from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBXpqaWs6HgOsRRa7nAEsHJ74XWWXuvMQk",
+  authDomain: "summitfx-4cb86.firebaseapp.com",
+  projectId: "summitfx-4cb86",
+  storageBucket: "summitfx-4cb86.firebasestorage.app",
+  messagingSenderId: "941382391446",
+  appId: "1:941382391446:web:d9198bc79cf26bf82154b7"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentUser = null;
+
+/* 🔥 CHECK USER */
+onAuthStateChanged(auth,(user)=>{
+
+    if(user){
+        currentUser = user;
+    }else{
+        window.location = "login.html";
+    }
+
+});
 
 /* WALLET ADDRESSES */
 const wallets = {
@@ -114,7 +154,7 @@ const wallets = {
     trx: "TADLKQobn7Nea5Zg8NiTQxGwJDP3AzgE9M"
 };
 
-function generateAddress(){
+window.generateAddress = async function(){
 
     const crypto = document.getElementById("crypto").value;
     const amount = document.getElementById("amount").value;
@@ -132,11 +172,43 @@ function generateAddress(){
         "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + address;
 
     document.getElementById("result").style.display = "block";
+
+    /* 🔥 THIS FIXES ADMIN TRACKING */
+    try{
+
+        await addDoc(collection(db,"deposits"),{
+
+            uid: currentUser.uid,
+            userEmail: currentUser.email,
+
+            amount: Number(amount),
+
+            crypto: crypto,
+
+            walletAddress: address,
+
+            status: "pending",
+
+            createdAt: Date.now()
+
+        });
+
+        console.log("Deposit saved");
+
+    }catch(e){
+
+        console.log(e);
+
+    }
+
 }
 
-function copyAddress(){
+window.copyAddress = function(){
+
     const text = document.getElementById("walletAddress").innerText;
+
     navigator.clipboard.writeText(text);
+
     alert("Address copied");
 }
 
