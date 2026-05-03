@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+   <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -84,37 +84,12 @@ img{
     <label>Country</label>
     <select id="country">
         <option value="">Select Country</option>
-        <option>Afghanistan</option>
-        <option>Albania</option>
-        <option>Algeria</option>
-        <option>Argentina</option>
-        <option>Australia</option>
-        <option>Austria</option>
-        <option>Bangladesh</option>
-        <option>Belgium</option>
-        <option>Brazil</option>
-        <option>Canada</option>
-        <option>China</option>
-        <option>Egypt</option>
-        <option>France</option>
-        <option>Germany</option>
-        <option>India</option>
-        <option>Indonesia</option>
-        <option>Italy</option>
-        <option>Japan</option>
         <option>Kenya</option>
-        <option>Mexico</option>
-        <option>Nigeria</option>
-        <option>Pakistan</option>
-        <option>Philippines</option>
-        <option>Russia</option>
-        <option>South Africa</option>
-        <option>Spain</option>
-        <option>Turkey</option>
-        <option>United Kingdom</option>
         <option>United States</option>
-        <option>Vietnam</option>
-        <option>Zambia</option>
+        <option>United Kingdom</option>
+        <option>India</option>
+        <option>Nigeria</option>
+        <option>South Africa</option>
     </select>
 
     <label>ID Type</label>
@@ -156,7 +131,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyBXpqaWs6HgOsRRa7nAEsHJ74XWWXuvMQk",
   authDomain: "summitfx-4cb86.firebaseapp.com",
   projectId: "summitfx-4cb86",
-  storageBucket: "summitfx-4cb86.firebasestorage.app",
+  storageBucket: "summitfx-4cb86.appspot.com",
   messagingSenderId: "941382391446",
   appId: "1:941382391446:web:d9198bc79cf26bf82154b7"
 };
@@ -168,7 +143,7 @@ const storage = getStorage(app);
 
 let uid = null;
 
-/* AUTH */
+/* AUTH SAFE CHECK */
 onAuthStateChanged(auth,(user)=>{
     if(user){
         uid = user.uid;
@@ -177,14 +152,15 @@ onAuthStateChanged(auth,(user)=>{
     }
 });
 
-/* UPLOAD FUNCTION */
+/* SAFE UPLOAD */
 async function upload(file,path){
+    if(!file) return "";
     const storageRef = ref(storage,path);
     await uploadBytes(storageRef,file);
     return await getDownloadURL(storageRef);
 }
 
-/* SUBMIT KYC */
+/* SUBMIT KYC (FIXED) */
 window.submitKYC = async function(){
 
     const name = document.getElementById("name").value;
@@ -194,6 +170,11 @@ window.submitKYC = async function(){
     const idFile = document.getElementById("idFile").files[0];
     const selfieFile = document.getElementById("selfieFile").files[0];
 
+    if(!uid){
+        alert("User not ready");
+        return;
+    }
+
     if(!name || !country || !idType || !idFile){
         alert("Fill all required fields");
         return;
@@ -202,31 +183,31 @@ window.submitKYC = async function(){
     try{
 
         const idUrl = await upload(idFile,`kyc/${uid}/id.jpg`);
+        const selfieUrl = await upload(selfieFile,`kyc/${uid}/selfie.jpg`);
 
-        let selfieUrl = "";
-        if(selfieFile){
-            selfieUrl = await upload(selfieFile,`kyc/${uid}/selfie.jpg`);
-        }
-
+        /* 🔥 IMPORTANT FIX: merge-safe admin tracking */
         await setDoc(doc(db,"kyc",uid),{
+
+            uid,
             name,
             country,
             idType,
             idUrl,
             selfieUrl,
             status:"pending",
-            createdAt:new Date().toISOString()
+            createdAt:Date.now()
+
         });
 
         alert("KYC submitted successfully (Pending Verification)");
         window.location = "dashboard.html";
 
     }catch(err){
-        alert(err.message);
+        alert("Upload failed: " + err.message);
     }
 }
 
 </script>
 
 </body>
-</html>
+</html>     
