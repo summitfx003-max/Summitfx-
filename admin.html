@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SummitFX Admin Panel</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Segoe UI',Arial;
+    background:#05080f;
+    color:white;
+}
+
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:20px;
+    background:#0b1220;
+    border-bottom:1px solid #1f2937;
+    position:sticky;
+    top:0;
+    z-index:999;
+}
+
+.logo{
+    font-size:24px;
+    font-weight:bold;
+    background:linear-gradient(45deg,#00ffcc,#00aaff);
+    -webkit-background-clip:text;
+    color:transparent;
+}
+
+.admin-badge{
+    background:#00ffcc;
+    color:black;
+    padding:8px 14px;
+    border-radius:10px;
+    font-weight:bold;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:15px;
+    padding:20px;
+}
+
+.card{
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:16px;
+    padding:20px;
+    backdrop-filter:blur(10px);
+}
+
+.card-title{
+    color:#aaa;
+    font-size:14px;
+}
+
+.card-value{
+    font-size:30px;
+    margin-top:10px;
+    font-weight:bold;
+}
+
+.green{
+    color:#00ffcc;
+}
+
+.red{
+    color:#ff5c5c;
+}
+
+.section{
+    margin:20px;
+}
+
+.section h2{
+    margin-bottom:15px;
+}
+
+.table{
+    overflow:auto;
+    border-radius:15px;
+}
+
+.table table{
+    width:100%;
+    border-collapse:collapse;
+    background:#0b1220;
+}
+
+.table th,
+.table td{
+    padding:14px;
+    border-bottom:1px solid #1f2937;
+    text-align:left;
+}
+
+.table th{
+    color:#00ffcc;
+}
+
+.btn{
+    border:none;
+    padding:10px 15px;
+    border-radius:10px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.approve{
+    background:#00ffcc;
+    color:black;
+}
+
+.reject{
+    background:#ff5c5c;
+    color:white;
+}
+
+.logout{
+    background:#ff5c5c;
+    color:white;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    background:#111827;
+    border:none;
+    border-radius:10px;
+    color:white;
+    margin-top:10px;
+}
+
+.search-box{
+    margin-bottom:15px;
+}
+
+.user-card{
+    background:#0b1220;
+    padding:15px;
+    border-radius:15px;
+    margin-bottom:10px;
+    border:1px solid #1f2937;
+}
+
+.user-card img{
+    width:60px;
+    height:60px;
+    border-radius:50%;
+    object-fit:cover;
+    margin-bottom:10px;
+}
+
+.label{
+    color:#aaa;
+    font-size:13px;
+    margin-top:5px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <div class="logo">SummitFX Admin</div>
+    <button class="btn logout" onclick="logout()">Logout</button>
+</div>
+
+<div class="stats">
+
+    <div class="card">
+        <div class="card-title">Total Users</div>
+        <div class="card-value" id="totalUsers">0</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Pending KYC</div>
+        <div class="card-value red" id="pendingKYC">0</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Pending Withdrawals</div>
+        <div class="card-value red" id="pendingWithdrawals">0</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Approved Deposits</div>
+        <div class="card-value green" id="approvedDeposits">$0</div>
+    </div>
+
+</div>
+
+<div class="section">
+    <h2>User Search</h2>
+
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search username or email..." onkeyup="searchUsers()">
+    </div>
+
+    <div id="usersContainer"></div>
+</div>
+
+<div class="section">
+    <h2>KYC Requests</h2>
+
+    <div class="table">
+        <table>
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Country</th>
+                    <th>Document</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="kycTable"></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="section">
+    <h2>Withdrawal Requests</h2>
+
+    <div class="table">
+        <table>
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Amount</th>
+                    <th>Wallet</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="withdrawTable"></tbody>
+        </table>
+    </div>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+import {
+    getFirestore,
+    collection,
+    getDocs,
+    doc,
+    updateDoc,
+    query,
+    where
+} from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBXpqaWs6HgOsRRa7nAEsHJ74XWWXuvMQk",
+  authDomain: "summitfx-4cb86.firebaseapp.com",
+  projectId: "summitfx-4cb86",
+  storageBucket: "summitfx-4cb86.firebasestorage.app",
+  messagingSenderId: "941382391446",
+  appId: "1:941382391446:web:d9198bc79cf26bf82154b7"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// CHANGE THIS TO YOUR ADMIN EMAIL
+const ADMIN_EMAIL = "lkodomuk@kabarak.ac.ke";
+
+onAuthStateChanged(auth, async(user)=>{
+
+    if(!user){
+        window.location = "login.html";
+        return;
+    }
+
+    if(user.email !== ADMIN_EMAIL){
+        alert("Access denied");
+        window.location = "dashboard.html";
+        return;
+    }
+
+    loadUsers();
+    loadKYC();
+    loadWithdrawals();
+});
+
+async function loadUsers(){
+
+    const usersSnap = await getDocs(collection(db,"users"));
+
+    totalUsers.innerText = usersSnap.size;
+
+    usersContainer.innerHTML = "";
+
+    usersSnap.forEach(docSnap=>{
+
+        const d = docSnap.data();
+
+        usersContainer.innerHTML += `
+        <div class="user-card">
+            <img src="${d.photo || 'https://via.placeholder.com/100'}">
+
+            <div><b>${d.firstName || ''} ${d.lastName || ''}</b></div>
+            <div class="label">${d.email || 'No Email'}</div>
+            <div class="label">@${d.username || 'username'}</div>
+            <div class="label">Phone: ${d.phone || 'N/A'}</div>
+            <div class="label">Location: ${d.location || 'N/A'}</div>
+            <div class="label">Balance: $${d.balance || 0}</div>
+        </div>
+        `;
+    });
+}
+
+window.searchUsers = async function(){
+
+    const search = searchInput.value.toLowerCase();
+
+    const usersSnap = await getDocs(collection(db,"users"));
+
+    usersContainer.innerHTML = "";
+
+    usersSnap.forEach(docSnap=>{
+
+        const d = docSnap.data();
+
+        const fullText = `
+        ${d.firstName || ''}
+        ${d.lastName || ''}
+        ${d.username || ''}
+        ${d.email || ''}
+        `.toLowerCase();
+
+        if(fullText.includes(search)){
+
+            usersContainer.innerHTML += `
+            <div class="user-card">
+                <img src="${d.photo || 'https://via.placeholder.com/100'}">
+
+                <div><b>${d.firstName || ''} ${d.lastName || ''}</b></div>
+                <div class="label">${d.email || 'No Email'}</div>
+                <div class="label">Balance: $${d.balance || 0}</div>
+            </div>
+            `;
+        }
+    });
+}
+
+async function loadKYC(){
+
+    const kycSnap = await getDocs(collection(db,"kyc"));
+
+    let pending = 0;
+
+    kycTable.innerHTML = "";
+
+    kycSnap.forEach(docSnap=>{
+
+        const d = docSnap.data();
+
+        if(d.status === "pending") pending++;
+
+        kycTable.innerHTML += `
+        <tr>
+            <td>${d.uid || 'Unknown'}</td>
+            <td>${d.country || 'N/A'}</td>
+            <td>${d.documentType || 'N/A'}</td>
+            <td>${d.status || 'pending'}</td>
+            <td>
+                <button class="btn approve" onclick="approveKYC('${docSnap.id}')">Approve</button>
+                <button class="btn reject" onclick="rejectKYC('${docSnap.id}')">Reject</button>
+            </td>
+        </tr>
+        `;
+    });
+
+    pendingKYC.innerText = pending;
+}
+
+window.approveKYC = async function(id){
+
+    await updateDoc(doc(db,"kyc",id),{
+        status:"approved"
+    });
+
+    alert("KYC Approved");
+    loadKYC();
+}
+
+window.rejectKYC = async function(id){
+
+    await updateDoc(doc(db,"kyc",id),{
+        status:"rejected"
+    });
+
+    alert("KYC Rejected");
+    loadKYC();
+}
+
+async function loadWithdrawals(){
+
+    const withdrawSnap = await getDocs(collection(db,"withdrawals"));
+
+    let pending = 0;
+
+    withdrawTable.innerHTML = "";
+
+    withdrawSnap.forEach(docSnap=>{
+
+        const d = docSnap.data();
+
+        if(d.status === "pending") pending++;
+
+        withdrawTable.innerHTML += `
+        <tr>
+            <td>${d.userEmail || 'Unknown'}</td>
+            <td>$${d.amount || 0}</td>
+            <td>${d.walletType || 'Wallet'}</td>
+            <td>${d.status || 'pending'}</td>
+            <td>
+                <button class="btn approve" onclick="approveWithdraw('${docSnap.id}')">Approve</button>
+                <button class="btn reject" onclick="rejectWithdraw('${docSnap.id}')">Reject</button>
+            </td>
+        </tr>
+        `;
+    });
+
+    pendingWithdrawals.innerText = pending;
+}
+
+window.approveWithdraw = async function(id){
+
+    await updateDoc(doc(db,"withdrawals",id),{
+        status:"approved"
+    });
+
+    alert("Withdrawal Approved");
+    loadWithdrawals();
+}
+
+window.rejectWithdraw = async function(id){
+
+    await updateDoc(doc(db,"withdrawals",id),{
+        status:"rejected"
+    });
+
+    alert("Withdrawal Rejected");
+    loadWithdrawals();
+}
+
+window.logout = ()=>{
+    signOut(auth).then(()=>{
+        window.location = "login.html";
+    });
+}
+
+</script>
+
+</body>
+</html>
