@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bot Details</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:#0b1220;
+    color:white;
+}
+
+.container{
+    padding:20px;
+}
+
+.card{
+    background:#111827;
+    padding:20px;
+    border-radius:15px;
+    border:1px solid #1f2937;
+}
+
+.title{
+    font-size:22px;
+    color:#00ffcc;
+}
+
+.badge{
+    display:inline-block;
+    background:#0f766e;
+    padding:5px 10px;
+    border-radius:10px;
+    margin-top:10px;
+}
+
+ul{
+    margin-top:10px;
+    color:#aaa;
+}
+
+.btn{
+    width:100%;
+    padding:12px;
+    margin-top:15px;
+    border:none;
+    border-radius:10px;
+    background:linear-gradient(45deg,#00ffcc,#0099ff);
+    color:black;
+    font-weight:bold;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card" id="botCard">
+
+</div>
+
+</div>
+
+<script>
+
+const bot = localStorage.getItem("selectedBot");
+
+const data = {
+    starter: {
+        name: "Starter Bot",
+        range: "$50 - $100",
+        profit: "$3,000 in 24 hours",
+        features: [
+            "Low risk trading",
+            "AI market scanning",
+            "Auto entry & exit"
+        ]
+    },
+    pro: {
+        name: "Pro Bot",
+        range: "$100 - $500",
+        profit: "$7,000+ in 24 hours",
+        features: [
+            "Balanced risk strategy",
+            "Multi-market trading",
+            "AI optimization engine"
+        ]
+    },
+    elite: {
+        name: "Elite Bot",
+        range: "$500 - $700",
+        profit: "$15,000 in 24 hours",
+        features: [
+            "Institutional AI model",
+            "High frequency trading",
+            "Maximum profit extraction"
+        ]
+    }
+};
+
+const b = data[bot];
+
+document.getElementById("botCard").innerHTML = `
+<div class="title">${b.name}</div>
+<div class="badge">${b.range}</div>
+
+<p style="margin-top:10px;color:#00ffcc;">${b.profit}</p>
+
+<ul>
+${b.features.map(f=>`<li>${f}</li>`).join("")}
+</ul>
+
+<button class="btn" onclick="activate()">Activate Bot</button>
+`;
+
+function activate(){
+    window.location.href = "payment.html";
+}
+
+</script>
+
+</body>
+</html>
