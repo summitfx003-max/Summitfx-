@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bot Deposit</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:#05080f;
+    color:white;
+}
+
+.container{
+    padding:20px;
+}
+
+.card{
+    background:#111827;
+    padding:20px;
+    border-radius:15px;
+    border:1px solid #1f2937;
+    margin-bottom:15px;
+}
+
+.title{
+    font-size:20px;
+    color:#00ffcc;
+}
+
+.badge{
+    display:inline-block;
+    padding:5px 10px;
+    background:#0f766e;
+    border-radius:10px;
+    font-size:12px;
+    margin-top:8px;
+}
+
+.wallet{
+    word-break:break-all;
+    font-size:14px;
+    color:#00ffcc;
+    margin-top:10px;
+}
+
+.btn{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border:none;
+    border-radius:10px;
+    background:linear-gradient(45deg,#00ffcc,#0099ff);
+    color:black;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.small{
+    font-size:12px;
+    color:#aaa;
+    margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card">
+    <div class="title">Bot Deposit</div>
+    <div class="badge" id="botType">Loading bot...</div>
+
+    <p class="small">
+        This is your <b>personalized deposit address</b> linked to your SummitFX account.
+        Only send funds from supported networks.
+    </p>
+
+    <div class="wallet" id="wallet"></div>
+
+    <button class="btn" onclick="copyWallet()">Copy Address</button>
+
+    <button class="btn" onclick="confirmDeposit()">
+        I Have Made Payment
+    </button>
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+import { getFirestore, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBXpqaWs6HgOsRRa7nAEsHJ74XWWXuvMQk",
+  authDomain: "summitfx-4cb86.firebaseapp.com",
+  projectId: "summitfx-4cb86",
+  storageBucket: "summitfx-4cb86.firebasestorage.app",
+  messagingSenderId: "941382391446",
+  appId: "1:941382391446:web:d9198bc79cf26bf82154b7"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let user = null;
+
+/* YOUR MAIN PLATFORM WALLET */
+const platformWallet = "TLEMJfnDaAqSoGWTG19WRMp2nco3qM6kDW";
+
+/* BOT INFO FROM PREVIOUS PAGE */
+const bot = localStorage.getItem("selectedBot") || "starter";
+
+document.getElementById("botType").innerText =
+bot.toUpperCase() + " BOT SELECTED";
+
+document.getElementById("wallet").innerText =
+platformWallet;
+
+/* AUTH */
+onAuthStateChanged(auth,(u)=>{
+    if(!u){
+        window.location="login.html";
+    }else{
+        user = u;
+    }
+});
+
+/* COPY ADDRESS */
+window.copyWallet = function(){
+    navigator.clipboard.writeText(platformWallet);
+    alert("Address copied");
+};
+
+/* CONFIRM PAYMENT */
+window.confirmDeposit = async function(){
+
+    if(!user) return;
+
+    const ref = doc(db,"users",user.uid);
+
+    await updateDoc(ref,{
+        botDeposit:{
+            bot:bot,
+            status:"pending",
+            time:Date.now()
+        }
+    });
+
+    alert("Payment submitted. Activating bot...");
+
+    setTimeout(()=>{
+        window.location = "bot-live.html";
+    },1500);
+};
+
+</script>
+
+</body>
+</html>
