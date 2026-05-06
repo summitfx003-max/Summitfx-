@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Starter Bot</title>
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:#0b1220;
+color:white;
+}
+
+.container{
+padding:20px;
+}
+
+.card{
+background:#111827;
+padding:20px;
+border-radius:15px;
+margin-top:15px;
+border:1px solid #1f2937;
+}
+
+.title{
+color:#00ffcc;
+font-size:20px;
+font-weight:bold;
+}
+
+.btn{
+width:100%;
+padding:12px;
+margin-top:10px;
+border:none;
+border-radius:10px;
+background:#00ffcc;
+color:black;
+font-weight:bold;
+cursor:pointer;
+}
+
+.address{
+word-break:break-all;
+color:#00ffcc;
+}
+
+.tag{
+background:#0f766e;
+padding:5px 10px;
+border-radius:10px;
+display:inline-block;
+margin-top:5px;
+font-size:12px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card">
+<div class="title">Starter Bot</div>
+<div class="tag">Low Risk • Beginner Friendly</div>
+<p>Automated trading bot designed for stable market entry and low-risk execution.</p>
+</div>
+
+<div class="card">
+<h3>Deposit Instructions</h3>
+<p>Send investment amount between <b>$50 - $100</b> to activate this bot.</p>
+<p>Use the wallet below:</p>
+
+<p class="address">TLEMJfnDaAqSoGWTG19WRMp2nco3qM6kDW</p>
+
+<button class="btn" onclick="copy()">Copy Address</button>
+</div>
+
+<div class="card">
+<h3>Payment Methods</h3>
+<p>• USDT (TRC20)</p>
+<p>• TRX (TRON)</p>
+</div>
+
+<button class="btn" onclick="go()">Proceed to Payment</button>
+
+</div>
+
+<script>
+function copy(){
+navigator.clipboard.writeText("TLEMJfnDaAqSoGWTG19WRMp2nco3qM6kDW");
+alert("Address copied");
+}
+
+function go(){
+window.location="deposit.html";
+}
+</script>
+
+</body>
+</html>
