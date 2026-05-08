@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -25,14 +25,19 @@ body {
   text-align: center;
 }
 
+h1 {
+  margin-bottom: 10px;
+  color: #00ffcc;
+}
+
 h2 {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 input {
   width: 100%;
   padding: 10px;
-  margin: 10px 0;
+  margin: 8px 0;
   border: none;
   border-radius: 5px;
 }
@@ -61,11 +66,20 @@ a {
 
 <div class="container">
 
+  <!-- ADDED -->
+  <h1>SummitFX</h1>
+
   <h2>Create Account</h2>
+
+  <!-- ADDED FULL NAME -->
+  <input type="text" id="fullName" placeholder="Enter Full Name">
 
   <input type="email" id="email" placeholder="Enter Email">
 
-  <input type="password" id="password" placeholder="Enter Password">
+  <input type="password" id="password" placeholder="Create Password">
+
+  <!-- ADDED CONFIRM PASSWORD -->
+  <input type="password" id="confirmPassword" placeholder="Confirm Password">
 
   <button onclick="registerUser()">Register</button>
 
@@ -82,13 +96,9 @@ import {
   createUserWithEmailAndPassword,
   setPersistence,
   browserLocalPersistence,
-
-  /* 🔥 ADDED */
   sendEmailVerification
-
 } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 
-/* 🔥 FIRESTORE */
 import {
   getFirestore,
   doc,
@@ -99,25 +109,17 @@ const firebaseConfig = {
   apiKey: "AIzaSyBXpqaWs6HgOsRRa7nAEsHJ74XWWXuvMQk",
   authDomain: "summitfx-4cb86.firebaseapp.com",
   projectId: "summitfx-4cb86",
-
-  /* 🔥 FIXED */
   storageBucket: "summitfx-4cb86.appspot.com",
-
   messagingSenderId: "941382391446",
   appId: "1:941382391446:web:d9198bc79cf26bf82154b7"
 };
 
 const app = initializeApp(firebaseConfig);
-
 const auth = getAuth(app);
-
 const db = getFirestore(app);
 
 /* KEEP AUTH CONSISTENT */
 setPersistence(auth, browserLocalPersistence)
-.then(() => {
-  console.log("Auth persistence enabled");
-})
 .catch((error) => {
   console.log("Persistence error:", error);
 });
@@ -125,20 +127,23 @@ setPersistence(auth, browserLocalPersistence)
 /* REGISTER FUNCTION */
 window.registerUser = async function () {
 
+  const fullName = document.getElementById("fullName").value.trim();
   const email = document.getElementById("email").value.trim();
-
   const password = document.getElementById("password").value;
+  const confirmPassword = document.getElementById("confirmPassword").value;
 
-  if (!email || !password) {
-
+  if (!fullName || !email || !password || !confirmPassword) {
     alert("Please fill all fields");
+    return;
+  }
 
+  if (password !== confirmPassword) {
+    alert("Passwords do not match");
     return;
   }
 
   try{
 
-    /* CREATE ACCOUNT */
     const userCredential = await createUserWithEmailAndPassword(
       auth,
       email,
@@ -147,15 +152,13 @@ window.registerUser = async function () {
 
     const user = userCredential.user;
 
-    /* 🔥 SEND EMAIL VERIFICATION */
     await sendEmailVerification(user);
 
-    /* 🔥 SAVE USER */
     await setDoc(doc(db, "users", user.uid), {
 
       uid: user.uid,
-
       email: user.email,
+      fullName: fullName,
 
       firstName: "",
       lastName: "",
@@ -165,29 +168,21 @@ window.registerUser = async function () {
       address: "",
 
       balance: 0,
-
       kycStatus: "unverified",
-
       emailVerified: false,
-
       createdAt: Date.now(),
-
       status: "active"
 
     });
 
-    alert(
-      "✅ Account created successfully!\n\nVerification link sent to your email."
-    );
+    alert("Account created successfully! Verification email sent.");
 
     setTimeout(() => {
       window.location.href = "login.html";
     }, 1500);
 
   }catch(error){
-
     alert("❌ " + error.message);
-
   }
 };
 
