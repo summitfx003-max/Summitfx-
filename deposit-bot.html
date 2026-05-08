@@ -81,10 +81,12 @@ body{
 
     <div class="wallet" id="wallet"></div>
 
-    <button class="btn" onclick="copyWallet()">Copy Address</button>
+    <button class="btn" onclick="goDeposit()">
+        Deposit
+    </button>
 
     <button class="btn" onclick="confirmDeposit()">
-        I Have Made Payment
+        I Have Made Deposit
     </button>
 </div>
 
@@ -94,7 +96,6 @@ body{
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-import { getFirestore, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBXpqaWs6HgOsRRa7nAEsHJ74XWWXuvMQk",
@@ -107,14 +108,9 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
 
-let user = null;
-
-/* YOUR MAIN PLATFORM WALLET */
 const platformWallet = "TLEMJfnDaAqSoGWTG19WRMp2nco3qM6kDW";
 
-/* BOT INFO FROM PREVIOUS PAGE */
 const bot = localStorage.getItem("selectedBot") || "starter";
 
 document.getElementById("botType").innerText =
@@ -127,37 +123,21 @@ platformWallet;
 onAuthStateChanged(auth,(u)=>{
     if(!u){
         window.location="login.html";
-    }else{
-        user = u;
     }
 });
 
-/* COPY ADDRESS */
-window.copyWallet = function(){
-    navigator.clipboard.writeText(platformWallet);
-    alert("Address copied");
+/* DEPOSIT BUTTON */
+window.goDeposit = function(){
+
+    window.location.href = "deposit.html";
+
 };
 
-/* CONFIRM PAYMENT */
-window.confirmDeposit = async function(){
+/* PAYMENT BUTTON */
+window.confirmDeposit = function(){
 
-    if(!user) return;
+    alert("Insufficient funds");
 
-    const ref = doc(db,"users",user.uid);
-
-    await updateDoc(ref,{
-        botDeposit:{
-            bot:bot,
-            status:"pending",
-            time:Date.now()
-        }
-    });
-
-    alert("Payment submitted. Activating bot...");
-
-    setTimeout(()=>{
-        window.location = "bot-live.html";
-    },1500);
 };
 
 </script>
