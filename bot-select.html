@@ -1,51 +1,61 @@
-<!DOCTYPE html>
+        <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bot Details</title>
+<title>Select Bot</title>
 
 <style>
 body{
     margin:0;
     font-family:Arial;
-    background:#0b1220;
+    background:linear-gradient(180deg,#0b1220,#05080f);
     color:white;
 }
 
+.header{
+    padding:15px;
+    border-bottom:1px solid #1f2937;
+}
+
+.logo{
+    font-size:20px;
+    font-weight:bold;
+    background:linear-gradient(45deg,#00ffcc,#00aaff);
+    -webkit-background-clip:text;
+    color:transparent;
+}
+
 .container{
-    padding:20px;
+    padding:15px;
 }
 
 .card{
     background:#111827;
     padding:20px;
     border-radius:15px;
+    margin-bottom:15px;
     border:1px solid #1f2937;
 }
 
 .title{
-    font-size:22px;
+    font-size:18px;
     color:#00ffcc;
 }
 
 .badge{
-    display:inline-block;
     background:#0f766e;
     padding:5px 10px;
     border-radius:10px;
-    margin-top:10px;
-}
-
-ul{
-    margin-top:10px;
-    color:#aaa;
+    font-size:12px;
+    display:inline-block;
+    margin-top:5px;
 }
 
 .btn{
     width:100%;
     padding:12px;
-    margin-top:15px;
+    margin-top:10px;
     border:none;
     border-radius:10px;
     background:linear-gradient(45deg,#00ffcc,#0099ff);
@@ -58,68 +68,76 @@ ul{
 
 <body>
 
+<div class="header">
+<div class="logo">Choose Your Bot</div>
+</div>
+
 <div class="container">
 
-<div class="card" id="botCard">
+<!-- STARTER -->
+<div class="card">
+<div class="title">Starter Bot</div>
+<div class="badge">$50 - $100</div>
 
+<p style="margin-top:10px;color:#00ffcc;">
+Estimated Performance: $3,000 in 24 hours
+</p>
+
+<p>
+Safe low-risk automated trading system.
+</p>
+
+<button class="btn" onclick="selectBot('starter')">
+Activate Starter
+</button>
+</div>
+
+<!-- PRO -->
+<div class="card">
+<div class="title">Pro Bot</div>
+<div class="badge">$100 - $500</div>
+
+<p style="margin-top:10px;color:#00ffcc;">
+Estimated Performance: $7,000+ in 24 hours
+</p>
+
+<p>
+Balanced risk-reward AI trading strategy.
+</p>
+
+<button class="btn" onclick="selectBot('pro')">
+Activate Pro
+</button>
+</div>
+
+<!-- ELITE -->
+<div class="card">
+<div class="title">Elite Bot</div>
+<div class="badge">$500 - $700</div>
+
+<p style="margin-top:10px;color:#00ffcc;">
+Estimated Performance: $15,000 in 24 hours
+</p>
+
+<p>
+High-performance institutional trading AI.
+</p>
+
+<button class="btn" onclick="selectBot('elite')">
+Activate Elite
+</button>
 </div>
 
 </div>
 
 <script>
 
-const bot = localStorage.getItem("selectedBot");
+function selectBot(bot){
 
-const data = {
-    starter: {
-        name: "Starter Bot",
-        range: "$50 - $100",
-        profit: "$3,000 in 24 hours",
-        features: [
-            "Low risk trading",
-            "AI market scanning",
-            "Auto entry & exit"
-        ]
-    },
-    pro: {
-        name: "Pro Bot",
-        range: "$100 - $500",
-        profit: "$7,000+ in 24 hours",
-        features: [
-            "Balanced risk strategy",
-            "Multi-market trading",
-            "AI optimization engine"
-        ]
-    },
-    elite: {
-        name: "Elite Bot",
-        range: "$500 - $700",
-        profit: "$15,000 in 24 hours",
-        features: [
-            "Institutional AI model",
-            "High frequency trading",
-            "Maximum profit extraction"
-        ]
-    }
-};
+localStorage.setItem("selectedBot", bot);
 
-const b = data[bot];
+window.location.href = "deposit-bot.html";
 
-document.getElementById("botCard").innerHTML = `
-<div class="title">${b.name}</div>
-<div class="badge">${b.range}</div>
-
-<p style="margin-top:10px;color:#00ffcc;">${b.profit}</p>
-
-<ul>
-${b.features.map(f=>`<li>${f}</li>`).join("")}
-</ul>
-
-<button class="btn" onclick="activate()">Activate Bot</button>
-`;
-
-function activate(){
-    window.location.href = "deposit-bot.html";
 }
 
 </script>
