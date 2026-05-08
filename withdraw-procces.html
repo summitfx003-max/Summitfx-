@@ -82,11 +82,8 @@ import {
     getDoc, 
     updateDoc, 
     arrayUnion,
-
-    /* 🔥 ADDED */
     collection,
     addDoc
-
 } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -129,7 +126,6 @@ onAuthStateChanged(auth, async (user)=>{
     }
 
     const ref = doc(db, "users", user.uid);
-
     const snap = await getDoc(ref);
 
     if(!snap.exists()){
@@ -138,77 +134,17 @@ onAuthStateChanged(auth, async (user)=>{
     }
 
     const data = snap.data();
-
     const balance = data.balance || 0;
 
-    /* 🔴 FINAL SECURITY CHECK */
-    if(amount > balance){
-
-        document.getElementById("status").innerText = "❌ Insufficient balance";
-
-        document.getElementById("status").className = "fail";
-
-        setTimeout(()=>{
-            window.location = "withdraw.html";
-        }, 2000);
-
-        return;
-    }
-
-    /* 🔥 DEDUCT BALANCE + SAVE USER HISTORY */
-    await updateDoc(ref, {
-
-        balance: balance - amount,
-
-        withdrawals: arrayUnion({
-
-            amount,
-            method,
-            wallet,
-
-            status: "pending",
-
-            time: new Date().toISOString()
-
-        })
-
-    });
-
-    /* 🔥 THIS FIXES ADMIN TRACKING */
-    await addDoc(collection(db,"withdrawals"),{
-
-        uid: user.uid,
-
-        userEmail: user.email,
-
-        amount: amount,
-
-        walletType: method,
-
-        walletAddress: wallet,
-
-        status: "pending",
-
-        createdAt: Date.now()
-
-    });
-
-    /* PROCESSING ANIMATION */
-    setTimeout(()=>{
-
-        document.getElementById("status").innerText =
-        "⏳ Withdrawal Pending (Processing...)";
-
-    }, 1500);
+    /* 🔴 FORCED RESPONSE */
+    document.getElementById("status").innerText = "❌ Insufficient funds";
+    document.getElementById("status").className = "fail";
 
     setTimeout(()=>{
+        window.location = "withdraw.html";
+    }, 2000);
 
-        document.getElementById("status").innerText =
-        "✔ Submitted Successfully - Awaiting Confirmation";
-
-        document.getElementById("status").className = "success";
-
-    }, 4000);
+    return;
 
 });
 
