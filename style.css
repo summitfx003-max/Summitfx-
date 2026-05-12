@@ -5,27 +5,68 @@ body {
   color: white;
 }
 
+/* HEADER */
 header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 20px;
   background: #111827;
+  border-bottom: 1px solid #1f2937;
 }
 
+/* NAV LINKS */
 nav a {
   margin-left: 15px;
   color: white;
   text-decoration: none;
+  transition: 0.3s;
 }
 
+nav a:hover {
+  color: #f0b90b;
+}
+
+/* HERO SECTION */
 .hero {
   text-align: center;
   margin-top: 100px;
+  padding: 0 15px;
 }
 
+/* BUTTON */
 .btn {
   padding: 10px 20px;
   background: #f0b90b;
   color: black;
   text-decoration: none;
+  display: inline-block;
+  border-radius: 6px;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  background: #ffd24d;
+  transform: scale(1.05);
+}
+
+/* MOBILE RESPONSIVENESS (SAFE ADDITION) */
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  nav {
+    margin-top: 10px;
+  }
+
+  nav a {
+    margin: 5px;
+    display: inline-block;
+  }
+
+  .hero {
+    margin-top: 60px;
+  }
 }
